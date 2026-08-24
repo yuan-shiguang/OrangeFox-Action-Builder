@@ -20,19 +20,19 @@ on:
       DEVICE_TREE:
         description: 'OrangeFox Device Tree'
         required: true
-        default: 'https://gitlab.com/OrangeFox/device/dipper'
+        default: 'https://github.com/TeamWin/android_device_xiaomi_equuleus'
       DEVICE_TREE_BRANCH:
         description: 'OrangeFox Device Tree Branch'
         required: true
-        default: 'fox_12.1'
+        default: 'android-10'
       DEVICE_PATH:
         description: 'Specify your Device Path'
         required: true
-        default: 'device/xiaomi/dipper'
+        default: 'device/xiaomi/equuleus'
       DEVICE_NAME:
         description: 'Specify your Device Codename'
         required: true
-        default: 'dipper'
+        default: 'equuleus'
       BUILD_TARGET:
         description: 'Specify your Build Target'
         required: true
@@ -77,7 +77,7 @@ jobs:
         cd ${GITHUB_WORKSPACE}/OrangeFox
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-        git clone https://github.com/yuan-shiguang/OrangeFoxSync.git -b master-series sync
+        git clone https://github.com/yuan-shiguang/OrangeFoxSync.git -b master sync
         cd sync
         ./orangefox_sync.sh --branch ${{ inputs.MANIFEST_BRANCH }} --path ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
 
@@ -96,7 +96,7 @@ jobs:
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
         set -e
-        lunch twrp_${{ inputs.DEVICE_NAME }}-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
+        lunch omni_${{ inputs.DEVICE_NAME }}-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
 
     - name: Set Release Properties
       run: |

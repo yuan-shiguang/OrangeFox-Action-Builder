@@ -84,8 +84,33 @@ jobs:
     - name: Clone Device Tree
       run: |
         cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+        
+        # 克隆设备树
         git clone ${{ inputs.DEVICE_TREE }} -b ${{ inputs.DEVICE_TREE_BRANCH }} ./${{ inputs.DEVICE_PATH }}
         cd ${{ inputs.DEVICE_PATH }}
+        
+        # 检查并修复 omni_equuleus.mk
+        if [ -f "omni_equuleus.mk" ]; then
+          echo "Found omni_equuleus.mk, converting for OrangeFox..."
+          
+          # 创建 twrp_ursa.mk 替代
+          cat > twrp_ursa.mk << 'EOF'
+        # OrangeFox Recovery for equuleus
+        $(call inherit-product, device/xiaomi/ursa/device.mk)
+        $(call inherit-product, bootable/recovery/twrp.mk)
+        
+        PRODUCT_NAME := twrp_equuleus
+        PRODUCT_DEVICE := equuleus
+        PRODUCT_BRAND := Xiaomi
+        PRODUCT_MODEL := equuleus
+        EOF
+          
+          # 更新 AndroidProducts.mk
+          sed -i '/omni_equuleus/d' AndroidProducts.mk
+          echo "PRODUCT_MAKEFILES := \$(LOCAL_DIR)/twrp_equuleus.mk" >> AndroidProducts.mk
+          echo "COMMON_LUNCH_CHOICES := twrp_equuleus-eng" >> AndroidProducts.mk
+        fi
+        
         echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
     - name: Building OrangeFox
@@ -96,7 +121,7 @@ jobs:
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
         set -e
-        lunch omni_${{ inputs.DEVICE_NAME }}-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
+        lunch twrp_${{ inputs.DEVICE_NAME }}-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
 
     - name: Set Release Properties
       run: |
